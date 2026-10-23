@@ -1,6 +1,6 @@
 # Library Curator cover
 
-Generated with the built-in ImageGen tool, using the CJK Name Fixer, Paused Stream Killer and Community Rating covers as style references. Final asset: [library-curator-cover.png](library-curator-cover.png).
+Generated with the built-in ImageGen tool, using the CJK Name Fixer, Paused Stream Killer and Community Rating covers as style references. Final asset: [library-curator-cover-v2.png](library-curator-cover-v2.png).
 
 The final cover has a uniform deep indigo background, a centered white pictogram representing selected library cards and hiding, and a violet-to-magenta pencil representing renaming. It contains no text.
 

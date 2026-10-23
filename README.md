@@ -1,6 +1,6 @@
 # Library Curator
 
-![Library Curator illustration](assets/library-curator-cover.png)
+![Library Curator illustration](assets/library-curator-cover-v2.png)
 
 **Library Curator** is a Jellyfin plugin that lets you hide selected collections from the Collections library and customize the name of the Playlists library in Jellyfin Web.
 
