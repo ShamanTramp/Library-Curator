@@ -25,6 +25,8 @@ Verified in Jellyfin Web alongside the installed Community Rating plugin:
 
 The Web script intentionally starts on the login page but performs no authenticated requests until an account is signed in. This also supports signing in without reloading the browser.
 
+- Missing JavaScript Injector: the server starts successfully and authenticated settings, administrator collection listing and dependency status remain available.
+
 ## Distribution checks
 
 CI and release workflows run the .NET and Web suites. The package script validates the tag/version and required assemblies before writing the ZIP and Jellyfin manifest. Only the isolated test instance is used for installation testing; existing plugin projects and the pre-existing Jellyfin instance are not changed.
