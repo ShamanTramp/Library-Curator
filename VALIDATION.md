@@ -8,7 +8,7 @@ Target: Jellyfin Server/Web **10.11.11**, .NET 9, JavaScript Injector **3.1.0.0*
 - **19 .NET tests**: defaults, identifier normalization, administrator exemption, disabled features, names, API authorization and embedded resources.
 - **21 Web tests**: native query preservation, exclusion merging, pagination arguments, scope, rendering and safe text insertion, native home links, account changes, login-page startup, restoration, duplicate injection, configuration failures and Community Rating's actual released script in both loading orders.
 - **22 live API checks** on an isolated Jellyfin: two standard accounts, administrator exemption on/off, permissions, native views, direct collection access, search, settings persistence after restart and disabled behavior.
-- Pagination fixture: **25 collections, 8 excluded → 17 visible; pages of 10 and 7**.
+- Pagination fixture: **25 collections, 8 excluded → 17 visible; pages of 10 and 7**. Additional live checks confirm **25 selected → 0 visible** and **0 selected → 25 visible**.
 
 Run the live checks as described in [tests/integration/README.md](tests/integration/README.md). Tokens and fixture credentials are kept outside the repository.
 
@@ -30,3 +30,6 @@ The Web script intentionally starts on the login page but performs no authentica
 ## Distribution checks
 
 CI and release workflows run the .NET and Web suites. The package script validates the tag/version and required assemblies before writing the ZIP and Jellyfin manifest. Only the isolated test instance is used for installation testing; existing plugin projects and the pre-existing Jellyfin instance are not changed.
+
+
+The published **0.1.0.0** package was installed through Jellyfin's real plugin catalog using the public repository manifest. Package download and checksum validation succeeded. A temporary **0.0.0.0** build was then used as a previous-version fixture: updating it to **0.1.0.0** from the catalog succeeded, the plugin was active after restart, and saved collection exclusions and the custom Playlists label were preserved.
