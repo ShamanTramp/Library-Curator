@@ -7,6 +7,15 @@
     "owner": "ShamanTramp",
     "category": "General",
     "imageUrl": "https://raw.githubusercontent.com/ShamanTramp/Library-Curator/main/assets/library-curator-cover.png",
-    "versions": []
+    "versions": [
+      {
+        "version": "0.1.0.0",
+        "changelog": "Initial release: selective collection hiding with administrator exemption and custom Playlists library name in Jellyfin Web.",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://raw.githubusercontent.com/ShamanTramp/Library-Curator/main/packages/library-curator-0.1.0.0.zip",
+        "checksum": "6f1d1f3045af1cd031face3858d65c43",
+        "timestamp": "2026-10-23T16:36:58Z"
+      }
+    ]
   }
 ]
