@@ -1,0 +1,11 @@
+services:
+  jellyfin-test:
+    image: jellyfin/jellyfin:10.11.11
+    container_name: library-curator-jellyfin-test
+    init: true
+    ports:
+      - "127.0.0.1:18097:8096/tcp"
+    volumes:
+      - ${LIBRARY_CURATOR_QA_ROOT:-/tmp/library-curator-qa}/config:/config
+      - ${LIBRARY_CURATOR_QA_ROOT:-/tmp/library-curator-qa}/cache:/cache
+      - ${LIBRARY_CURATOR_QA_ROOT:-/tmp/library-curator-qa}/media:/media

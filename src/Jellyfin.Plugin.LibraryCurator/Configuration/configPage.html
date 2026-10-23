@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Library Curator</title></head><body>
+<div id="LibraryCuratorConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
+<div data-role="content"><div class="content-primary"><form id="LibraryCuratorForm">
+<h2>Library Curator</h2>
+<p id="lc-status" role="status" aria-live="polite"></p>
+<div class="checkboxContainer"><label><input id="lc-enabled" type="checkbox" is="emby-checkbox"><span data-lc="enabled">Enable Library Curator</span></label></div>
+<div class="checkboxContainer"><label><input id="lc-hide" type="checkbox" is="emby-checkbox"><span data-lc="hide">Hide selected collections in the Collections library</span></label></div>
+<div class="checkboxContainer"><label><input id="lc-admin" type="checkbox" is="emby-checkbox"><span data-lc="admin">Keep all collections visible for administrators</span></label></div>
+<div class="inputContainer"><label class="inputLabel" for="lc-playlists" data-lc="playlists">Playlists library name</label><input id="lc-playlists" type="text" is="emby-input"><div class="fieldDescription" data-lc="original">Leave empty to keep Jellyfin’s original name. Applies to everyone.</div></div>
+<h3 data-lc="collections">Collections to hide</h3>
+<div class="inputContainer"><label class="inputLabel" for="lc-search" data-lc="search">Search by name or identifier</label><input id="lc-search" type="search" is="emby-input"></div>
+<p class="fieldDescription" data-lc="scope">Only the Collections library in Jellyfin Web is filtered. Direct links and native applications keep working.</p>
+<div id="lc-count" role="status" aria-live="polite"></div><div id="lc-list"></div>
+<div style="display:flex;gap:1em;margin:1em 0"><button id="lc-prev" type="button" is="emby-button" class="raised" data-lc="previous">Previous</button><button id="lc-next" type="button" is="emby-button" class="raised" data-lc="next">Next</button></div>
+<p data-lc="reload">After saving, reload Jellyfin Web to apply the settings.</p>
+<button id="lc-save" type="submit" is="emby-button" class="raised button-submit block" disabled><span data-lc="save">Save</span></button>
+<p id="lc-error" role="alert"></p>
+</form></div></div>
+<script>
+(function () {
+    'use strict';
+    const page = document.querySelector('#LibraryCuratorConfigPage');
+    const pluginId = 'a7c41c34-c6a1-4cab-9c87-7f548ba37bb8';
+    const en = {enabled:'Enable Library Curator', hide:'Hide selected collections in the Collections library', admin:'Keep all collections visible for administrators', playlists:'Playlists library name', original:'Leave empty to keep Jellyfin’s original name. Applies to everyone.',collections:'Collections to hide',search:'Search by name or identifier',scope:'Only the Collections library in Jellyfin Web is filtered. Direct links and native applications keep working.',reload:'After saving, reload Jellyfin Web to apply the settings.',save:'Save',previous:'Previous',next:'Next',ready:'JavaScript Injector: script registered.',missing:'JavaScript Injector is missing or registration is pending. Install it and restart Jellyfin if needed.',unavailable:'Unable to check JavaScript Injector.',loading:'Loading collections…',error:'Unable to load the configuration or collections. Please retry by reopening this page.',notFound:'Collection not found',empty:'No collections match.',saved:'Settings saved. Reload Jellyfin Web.',saveError:'Unable to save settings.',selected:'selected',of:'of'};
+    const fr = {enabled:'Activer Library Curator',hide:'Masquer les collections sélectionnées dans la médiathèque Collections',admin:'Ne pas masquer les collections pour les administrateurs',playlists:'Nom de la médiathèque Playlists',original:'Laisser vide pour conserver le nom d’origine Jellyfin. Ce nom s’applique à tous.',collections:'Collections à masquer',search:'Rechercher par nom ou identifiant',scope:'Seule la médiathèque Collections de Jellyfin Web est filtrée. Les liens directs et les applications natives restent utilisables.',reload:'Après enregistrement, recharger Jellyfin Web pour appliquer les réglages.',save:'Enregistrer',previous:'Précédent',next:'Suivant',ready:'JavaScript Injector : script enregistré.',missing:'JavaScript Injector est absent ou son enregistrement est en attente. Installez-le et redémarrez Jellyfin si nécessaire.',unavailable:'Impossible de vérifier JavaScript Injector.',loading:'Chargement des collections…',error:'Impossible de charger la configuration ou les collections. Rouvrez cette page pour réessayer.',notFound:'Collection introuvable',empty:'Aucune collection correspondante.',saved:'Réglages enregistrés. Rechargez Jellyfin Web.',saveError:'Impossible d’enregistrer les réglages.',selected:'sélectionnées',of:'sur'};
+    let text = en, config, collections = [], selected = new Set(), offset = 0, generation = 0, complete = false;
+    const get = id => page.querySelector('#lc-' + id);
+    const normalize = id => String(id || '').replace(/-/g, '').toLowerCase();
+    const api = (path, params) => ApiClient.getJSON(ApiClient.getUrl('LibraryCurator/' + path, params));
+    function translate() { page.querySelectorAll('[data-lc]').forEach(node => { node.textContent = text[node.dataset.lc]; }); }
+    function render() {
+        const known = new Set(collections.map(item => normalize(item.Id)));
+        const missing = complete ? [...selected].filter(id => !known.has(id)).map(Id => ({Id, Name:text.notFound})) : [];
+        const query = get('search').value.trim().toLocaleLowerCase();
+        const items = [...missing, ...collections].filter(item => (item.Name + ' ' + item.Id).toLocaleLowerCase().includes(query));
+        offset = Math.min(offset, Math.max(0, Math.floor((items.length - 1) / 100) * 100));
+        const container = get('list'); container.replaceChildren();
+        items.slice(offset, offset + 100).forEach(item => {
+            const label = document.createElement('label'); label.style.display = 'block'; label.style.margin = '.75em 0';
+            const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = selected.has(normalize(item.Id));
+            checkbox.addEventListener('change', () => { if (checkbox.checked) selected.add(normalize(item.Id)); else selected.delete(normalize(item.Id)); render(); });
+            const span = document.createElement('span'); span.textContent = ' ' + item.Name + ' — ' + item.Id;
+            label.append(checkbox, span); container.append(label);
+        });
+        if (!items.length) container.textContent = text.empty;
+        get('count').textContent = selected.size + ' ' + text.selected + ' · ' + (items.length ? offset + 1 : 0) + '–' + Math.min(offset + 100, items.length) + ' ' + text.of + ' ' + items.length;
+        get('prev').disabled = offset === 0; get('next').disabled = offset + 100 >= items.length;
+    }
+    get('search').addEventListener('input', () => { offset = 0; render(); });
+    get('prev').addEventListener('click', () => { offset = Math.max(0, offset - 100); render(); });
+    get('next').addEventListener('click', () => { offset += 100; render(); });
+    page.addEventListener('viewshow', async function () {
+        const ticket = ++generation;
+        get('save').disabled = true; get('error').textContent = ''; complete = false;
+        try {
+            // Jellyfin's UI culture is independent of subtitle preferences.
+            let culture = document.documentElement.lang || navigator.language;
+            try { culture = (await ApiClient.getDisplayPreferences('usersettings', ApiClient.getCurrentUserId(), 'emby')).CustomPrefs?.['app-language'] || culture; } catch (_) { /* browser language fallback */ }
+            if (ticket !== generation) return;
+            text = String(culture).toLowerCase().startsWith('fr') ? fr : en; translate();
+            get('status').textContent = text.loading;
+            config = await ApiClient.getPluginConfiguration(pluginId);
+            if (ticket !== generation) return;
+            get('enabled').checked = config.Enabled; get('hide').checked = config.HideCollections; get('admin').checked = config.ExemptAdministrators;
+            get('playlists').value = config.PlaylistLibraryName || '';
+            selected = new Set((config.HiddenCollectionIds || []).map(normalize)); collections = []; offset = 0;
+            let index = 0;
+            while (true) {
+                const result = await api('Admin/Collections', {startIndex:index, limit:200});
+                if (ticket !== generation) return;
+                collections.push(...result.Items); index += result.Items.length;
+                if (index >= result.TotalRecordCount) break;
+                if (!result.Items.length) throw new Error('Incomplete collection list');
+            }
+            complete = true; render(); get('save').disabled = false;
+            try { const status = await api('Admin/Status'); if (ticket === generation) get('status').textContent = status.InjectorRegistered ? text.ready : text.missing; }
+            catch (_) { if (ticket === generation) get('status').textContent = text.unavailable; }
+        } catch (_) { if (ticket === generation) get('error').textContent = text.error; }
+    });
+    page.querySelector('form').addEventListener('submit', async function (event) {
+        event.preventDefault(); if (!config || !complete) return;
+        get('save').disabled = true; get('error').textContent = '';
+        try {
+            config = {...config, Enabled:get('enabled').checked, HideCollections:get('hide').checked, ExemptAdministrators:get('admin').checked, PlaylistLibraryName:get('playlists').value.trim(), HiddenCollectionIds:[...selected]};
+            await ApiClient.updatePluginConfiguration(pluginId, config); get('status').textContent = text.saved;
+        } catch (_) { get('error').textContent = text.saveError; }
+        finally { get('save').disabled = false; }
+    });
+})();
+</script></div></body></html>

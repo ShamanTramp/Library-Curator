@@ -1,0 +1,12 @@
+[
+  {
+    "guid": "a7c41c34-c6a1-4cab-9c87-7f548ba37bb8",
+    "name": "Library Curator",
+    "description": "Hide selected collections and customize the Playlists library name in Jellyfin Web.",
+    "overview": "Select collections to hide from the Collections library, optionally exempt administrators, and choose a custom Playlists library label. Requires JavaScript Injector.",
+    "owner": "ShamanTramp",
+    "category": "General",
+    "imageUrl": "https://raw.githubusercontent.com/ShamanTramp/Library-Curator/main/assets/library-curator-cover.png",
+    "versions": []
+  }
+]

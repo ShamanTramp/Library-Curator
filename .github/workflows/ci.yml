@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: dotnet restore Jellyfin.Plugin.LibraryCurator.sln
+      - run: dotnet build Jellyfin.Plugin.LibraryCurator.sln -c Release --no-restore -m:1
+      - run: dotnet test Jellyfin.Plugin.LibraryCurator.sln -c Release --no-build --no-restore -m:1
+      - run: npm ci --ignore-scripts
+      - run: npm test
